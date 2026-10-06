@@ -1,0 +1,136 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-display: "Anton", "Impact", sans-serif;
+  --font-sans: "Manrope", system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chili: var(--chili);
+  --color-ember: var(--ember);
+  --color-cream: var(--cream);
+  --color-coal: var(--coal);
+}
+
+:root {
+  --radius: 0.75rem;
+  --coal: oklch(0.13 0.008 50);
+  --background: oklch(0.15 0.01 50);
+  --foreground: oklch(0.95 0.025 85);
+  --cream: oklch(0.95 0.025 85);
+  --card: oklch(0.19 0.012 50);
+  --card-foreground: oklch(0.95 0.025 85);
+  --popover: oklch(0.19 0.012 50);
+  --popover-foreground: oklch(0.95 0.025 85);
+  --primary: oklch(0.76 0.16 65);
+  --primary-foreground: oklch(0.14 0.01 50);
+  --ember: oklch(0.82 0.15 75);
+  --chili: oklch(0.55 0.21 28);
+  --secondary: oklch(0.23 0.014 50);
+  --secondary-foreground: oklch(0.95 0.025 85);
+  --muted: oklch(0.23 0.014 50);
+  --muted-foreground: oklch(0.72 0.03 70);
+  --accent: oklch(0.55 0.21 28);
+  --accent-foreground: oklch(0.97 0.02 85);
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(0.97 0.02 85);
+  --border: oklch(0.95 0.025 85 / 12%);
+  --input: oklch(0.95 0.025 85 / 15%);
+  --ring: oklch(0.76 0.16 65);
+  --gradient-fire: linear-gradient(120deg, var(--chili), var(--primary) 60%, var(--ember));
+  --gradient-fade: linear-gradient(to bottom, transparent, var(--background));
+  --shadow-glow: 0 20px 60px -20px color-mix(in oklab, var(--primary) 55%, transparent);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--primary); color: var(--primary-foreground); }
+}
+
+@utility text-fire {
+  background: var(--gradient-fire);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility bg-fire { background: var(--gradient-fire); }
+@utility shadow-glow { box-shadow: var(--shadow-glow); }
+@utility grain {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1); }
+.reveal.in { opacity: 1; transform: none; }
+
+@keyframes steam {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  20% { opacity: .35; }
+  100% { transform: translateY(-220px) scale(2.4); opacity: 0; }
+}
+.steam { animation: steam 6s ease-out infinite; filter: blur(18px); }
+
+@keyframes ember-rise {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(-100vh) translateX(30px); opacity: 0; }
+}
+.ember { animation: ember-rise linear infinite; }
+
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee { animation: marquee 30s linear infinite; }
+
+@keyframes pulse-dot { 0%,100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 70%, transparent); } 50% { box-shadow: 0 0 0 14px transparent; } }
+.pulse-dot { animation: pulse-dot 2.2s ease-in-out infinite; }
+
+@keyframes dash { to { stroke-dashoffset: 0; } }
+.draw { stroke-dasharray: 600; stroke-dashoffset: 600; }
+.in .draw { animation: dash 2.4s ease forwards; }
+
+@keyframes loader-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.loader-bar { animation: loader-bar 1.2s cubic-bezier(.6,0,.2,1) forwards; transform-origin: left; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+}
