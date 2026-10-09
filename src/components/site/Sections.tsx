@@ -3,10 +3,11 @@ import { MapPin, Navigation, Play, Pause, Volume2, VolumeX, X, Flame } from "luc
 import hero from "@/assets/hero.jpg";
 import owner from "@/assets/owner.jpg";
 import frying from "@/assets/frying.jpg";
-import cookingVideo from "@/assets/cooking.mp4.asset.json";
 import { menu, locations, type Dish } from "@/lib/site-data";
 import { useReveal, useScrollY } from "./hooks";
 import { Embers } from "./Chrome";
+
+const cookingVideo = "/cooking.mp4";
 
 const btnFire = "inline-flex items-center justify-center gap-2 rounded-full bg-fire px-7 py-4 text-xs font-extrabold tracking-[0.2em] text-primary-foreground shadow-glow transition-transform hover:scale-105";
 const btnGhost = "inline-flex items-center justify-center gap-2 rounded-full border border-cream/30 px-7 py-4 text-xs font-extrabold tracking-[0.2em] text-cream backdrop-blur transition-colors hover:border-primary hover:text-primary";
@@ -221,31 +222,107 @@ export function VideoSection() {
   const v = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
+
   useEffect(() => {
     const el = v.current;
     if (!el) return;
-    const io = new IntersectionObserver(([entry]) => {
-      if (!entry) return;
-      if (entry.isIntersecting) el.play().then(() => setPlaying(true)).catch(() => {});
-      else { el.pause(); setPlaying(false); }
-    }, { threshold: 0.4 });
+    el.muted = muted;
+  }, [muted]);
+
+  useEffect(() => {
+    const el = v.current;
+    if (!el) return;
+
+    const onPlay = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
+    el.addEventListener("play", onPlay);
+    el.addEventListener("pause", onPause);
+
+    // Auto play when visible
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+        if (entry.isIntersecting) {
+          el.play().catch(() => {});
+        } else {
+          el.pause();
+        }
+      },
+      { threshold: 0.25 }
+    );
     io.observe(el);
-    return () => io.disconnect();
+
+    // Initial attempt to start muted playback
+    el.play().catch(() => {});
+
+    return () => {
+      el.removeEventListener("play", onPlay);
+      el.removeEventListener("pause", onPause);
+      io.disconnect();
+    };
   }, []);
-  const toggle = () => {
-    const el = v.current; if (!el) return;
-    if (el.paused) { el.play(); setPlaying(true); } else { el.pause(); setPlaying(false); }
+
+  const toggle = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const el = v.current;
+    if (!el) return;
+    if (el.paused) {
+      el.play().catch(() => {});
+    } else {
+      el.pause();
+    }
   };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMuted((prev) => !prev);
+  };
+
   return (
     <section ref={ref} className="bg-coal py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-5 md:px-8">
         <Eyebrow>ON THE STOVE</Eyebrow>
-        <h2 className="reveal mt-6 font-display text-6xl leading-none text-cream md:text-8xl">WATCH THE <span className="text-fire">CRAVING</span> COME ALIVE</h2>
-        <div className="reveal relative mt-12 flex min-h-0 w-full items-center justify-center overflow-hidden rounded-2xl border bg-background shadow-glow aspect-[9/16] sm:aspect-[4/3] lg:aspect-video">
-          <video ref={v} src={cookingVideo.url} poster={owner} muted={muted} loop playsInline preload="metadata" className="h-full w-full bg-coal object-contain" aria-label="A1 EATS cooking video" />
+        <h2 className="reveal mt-6 font-display text-6xl leading-none text-cream md:text-8xl">
+          WATCH THE <span className="text-fire">CRAVING</span> COME ALIVE
+        </h2>
+        <div
+          onClick={() => toggle()}
+          className="reveal group relative mt-12 flex min-h-0 w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border bg-background shadow-glow aspect-[9/16] sm:aspect-[4/3] lg:aspect-video"
+        >
+          <video
+            ref={v}
+            src={cookingVideo}
+            poster={owner}
+            autoPlay
+            muted={muted}
+            loop
+            playsInline
+            preload="auto"
+            className="h-full w-full bg-coal object-contain"
+            aria-label="A1 EATS cooking video"
+          />
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-coal/80 text-cream backdrop-blur">
+              {playing ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8 translate-x-0.5" />}
+            </div>
+          </div>
           <div className="absolute bottom-4 left-4 flex gap-2">
-            <button onClick={toggle} className="rounded-full bg-coal/70 p-3 text-cream backdrop-blur hover:text-primary" aria-label={playing ? "Pause video" : "Play video"}>{playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}</button>
-            <button onClick={() => setMuted((m) => !m)} className="rounded-full bg-coal/70 p-3 text-cream backdrop-blur hover:text-primary" aria-label={muted ? "Unmute" : "Mute"}>{muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}</button>
+            <button
+              type="button"
+              onClick={toggle}
+              className="rounded-full bg-coal/80 p-3 text-cream backdrop-blur transition-colors hover:text-primary hover:bg-coal"
+              aria-label={playing ? "Pause video" : "Play video"}
+            >
+              {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+            </button>
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="rounded-full bg-coal/80 p-3 text-cream backdrop-blur transition-colors hover:text-primary hover:bg-coal"
+              aria-label={muted ? "Unmute" : "Mute"}
+            >
+              {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            </button>
           </div>
         </div>
       </div>
